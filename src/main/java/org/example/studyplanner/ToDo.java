@@ -2,22 +2,24 @@ package org.example.studyplanner;
 
 import java.text.MessageFormat;
 
-public class ToDo implements PlannerMaterial{
+public class ToDo implements PlannerMaterial {
     private Integer id;
     private String title;
     private String description;
     private int priority;
+    private boolean isCompleted;
 
     public ToDo(Integer id, String title, String description, int priority) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.priority = priority;
+        this.isCompleted = false;
     }
 
     @Override
     public String toString() {
-        return MessageFormat.format("[(Priority:{3}) ToDo {0}: {1}, {2}]", id, title, description, priority);
+        return MessageFormat.format("[(Priority:{3}) ToDo {0}: {1}, {2}, Completed: {4}]", id, title, description, priority, isCompleted);
     }
 
     public int getId() {
@@ -50,5 +52,29 @@ public class ToDo implements PlannerMaterial{
 
     public void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    public void markAsCompleted() {
+        this.isCompleted = true;
+    }
+
+    public void resetCompletion() {
+        this.isCompleted = false;
+    }
+
+    public void updatePriority(int newPriority) {
+        if (newPriority < 0) {
+            throw new IllegalArgumentException("Priority cannot be negative");
+        }
+        this.priority = newPriority;
+    }
+
+    public String getSummary() {
+        return String.format("Task: %s, Priority: %d", title, priority);
+    }
+
+    // Moved method
+    public String formatInfo() {
+        return this.toString() + "\n";
     }
 }

@@ -51,16 +51,37 @@ public class StudyRegistryController {
         studyTaskManager.addRegistry(task);
     }
 
+    // In StudyRegistryController class
     private void handleSetObjective(StudyObjective objective){
         handleMethodHeader("(Study Objective Edit)");
         System.out.println("Type the following info: Integer id, Integer priority " +
                 "Integer practicedDays, int day, int month, int year, String name, String title, String description, " +
                 "String topic, String objectiveInOneLine, String objectiveFullDescription, String motivation, " +
                 "Double duration, boolean isActive  \n");
-        objective.handleSetObjective(Integer.parseInt(getInput()), Integer.parseInt(getInput()),Integer.parseInt(getInput()),Integer.parseInt(getInput()),Integer.parseInt(getInput()),
-                Integer.parseInt(getInput()), getInput(), getInput(), getInput(), getInput(), getInput(), getInput(), getInput(),
-                Double.parseDouble(getInput()), Boolean.parseBoolean(getInput()));
+
+        // Create DTO from inputs
+        StudyObjectiveDTO dto = new StudyObjectiveDTO(
+                Integer.parseInt(getInput()), // id
+                Integer.parseInt(getInput()), // priority
+                Integer.parseInt(getInput()), // practicedDays
+                Integer.parseInt(getInput()), // day
+                Integer.parseInt(getInput()), // month
+                Integer.parseInt(getInput()), // year
+                getInput(),                   // name
+                getInput(),                   // title
+                getInput(),                   // description
+                getInput(),                   // topic
+                getInput(),                   // objectiveInOneLine
+                getInput(),                   // objectiveFullDescription
+                getInput(),                   // motivation
+                Double.parseDouble(getInput()), // duration
+                Boolean.parseBoolean(getInput()) // isActive
+        );
+
+        // Pass DTO to the objective's handleSetObjective method
+        objective.handleSetObjective(dto);
     }
+
 
     private StudyObjective getStudyObjectiveInfo(){
         handleMethodHeader("(Study Objective Creation)");
@@ -68,10 +89,13 @@ public class StudyRegistryController {
         String title = getInput();
         String description = getInput();
         StudyObjective studyObjective = new StudyObjective(title, description);
+
+        // Create DTO from inputs
         handleSetObjective(studyObjective);
         studyTaskManager.addRegistry(studyObjective);
         return studyObjective;
     }
+
 
     private StudyPlan getStudyPlanInfo(){
         handleMethodHeader("(Study Plan Creation)");
@@ -83,15 +107,67 @@ public class StudyRegistryController {
         return plan;
     }
 
-    private void handleSetSteps(StudyPlan studyPlan){
+    private void handleSetSteps(StudyPlan studyPlan) {
         handleMethodHeader("(Study Plan Edit)");
-        System.out.println("Type the following info: String firstStep, String resetStudyMechanism, String consistentStep, " +
-                "String seasonalSteps, String basicSteps, String mainObjectiveTitle, String mainGoalTitle, String mainMaterialTopic, " +
-                "String mainTask, @NotNull  Integer numberOfSteps, boolean isImportant. " +
-                "The Date to start is today, the date to end is x days from now, type the quantity of days\n");
-        LocalDateTime createdAT = LocalDateTime.now();
-        studyPlan.assignSteps(getInput(), getInput(), getInput(), getInput(), getInput(), getInput(), getInput(), getInput(), getInput(),
-                Integer.parseInt(getInput()), Boolean.parseBoolean(getInput()), createdAT, createdAT.plusDays(Long.parseLong(getInput())));
+        StepDetails details = buildStepDetails();
+        studyPlan.assignSteps(details);
+    }
+
+    private StepDetails buildStepDetails() {
+        String[] basicStepInputs = collectBasicSteps();
+        String[] mainStepInputs = collectMainSteps();
+        int numberOfSteps = collectNumberOfSteps();
+        boolean isImportant = collectImportance();
+        long daysToEnd = collectDaysToEnd();
+
+        return createStepDetails(basicStepInputs, mainStepInputs, numberOfSteps, isImportant, daysToEnd);
+    }
+
+
+    private String[] collectBasicSteps() {
+        System.out.println("""
+        Type the following basic step details: 
+        String firstStep, String resetStudyMechanism, String consistentStep, 
+        String seasonalSteps, String basicSteps
+        """);
+        return new String[]{getInput(), getInput(), getInput(), getInput(), getInput()};
+    }
+
+    private String[] collectMainSteps() {
+        System.out.println("""
+        Type the following main step details: 
+        String mainObjectiveTitle, String mainGoalTitle, String mainMaterialTopic, String mainTask
+        """);
+        return new String[]{getInput(), getInput(), getInput(), getInput()};
+    }
+
+    private int collectNumberOfSteps() {
+        System.out.println("Type the number of steps:");
+        return Integer.parseInt(getInput());
+    }
+
+    private boolean collectImportance() {
+        System.out.println("Is this step important? (true/false):");
+        return Boolean.parseBoolean(getInput());
+    }
+
+    private long collectDaysToEnd() {
+        System.out.println("Enter the number of days until the end date:");
+        return Long.parseLong(getInput());
+    }
+
+    private StepDetails createStepDetails(
+            String[] basicStepInputs, String[] mainStepInputs,
+            int numberOfSteps, boolean isImportant, long daysToEnd
+    ) {
+        LocalDateTime createdAt = LocalDateTime.now();
+        LocalDateTime endDate = createdAt.plusDays(daysToEnd);
+
+        return new StepDetails(
+                basicStepInputs[0], basicStepInputs[1], basicStepInputs[2], basicStepInputs[3], basicStepInputs[4],
+                mainStepInputs[0], mainStepInputs[1], mainStepInputs[2], mainStepInputs[3],
+                numberOfSteps, isImportant, createdAt, endDate
+        );
     }
 
     private StudyGoal getStudyGoalInfo(){
@@ -109,15 +185,32 @@ public class StudyRegistryController {
         studyTaskManager.addRegistry(goal);
     }
 
-    private void editAudio(AudioReference audioReference){
+    private void editAudio(AudioReference audioReference) {
         handleMethodHeader("(Audio Edit)");
-        System.out.println("Type the following info:  AudioReference. AudioQuality audioQuality, boolean isDownloadable, " +
-                "String title, String description, String link, String accessRights, String license, String language, int rating, " +
-                "int viewCount, int shareCount \n");
-        AudioReference.AudioQuality quality =AudioReference.audioQualityAdapter(getInput());
-        audioReference.editAudio(quality, Boolean.parseBoolean(getInput()), getInput(), getInput(), getInput(), getInput(),
-                getInput(), getInput(), Integer.parseInt(getInput()), Integer.parseInt(getInput()), Integer.parseInt(getInput()));
+        AudioReference.AudioAttributes attributes = collectAudioAttributes();
+        audioReference.editAudio(attributes);
     }
+
+    private AudioReference.AudioAttributes collectAudioAttributes() {
+        System.out.println("Type the following info: AudioQuality (LOW | MEDIUM | HIGH | VERY_HIGH), " +
+                "boolean isDownloadable, String title, String description, String link, String accessRights, " +
+                "String license, String language, int rating, int viewCount, int shareCount");
+
+        return new AudioReference.AudioAttributes(
+                AudioReference.audioQualityAdapter(getInput()),
+                Boolean.parseBoolean(getInput()),
+                getInput(), // title
+                getInput(), // description
+                getInput(), // link
+                getInput(), // accessRights
+                getInput(), // license
+                getInput(), // language
+                Integer.parseInt(getInput()), // rating
+                Integer.parseInt(getInput()), // viewCount
+                Integer.parseInt(getInput())  // shareCount
+        );
+    }
+
 
     private AudioReference addAudioReference(){
         handleMethodHeader("(Audio Reference Creation)");
@@ -170,13 +263,33 @@ public class StudyRegistryController {
         System.out.println("Study Plan Added");
     }
 
-    private void getWeekInfo(){
-        System.out.println("(Study Task Manager Week Set Up) Type the following info: String planName, String objectiveTitle, " +
-                "String objectiveDescription, String materialTopic, String materialFormat, String goal, String reminderTitle, " +
-                "String reminderDescription, String mainTaskTitle, String mainHabit, String mainCardStudy");
-        studyTaskManager.setUpWeek(getInput(), getInput(), getInput(), getInput(), getInput(), getInput(), getInput(), getInput(),
-                getInput(), getInput(), getInput());
+    private String[] collectWeekInputs() {
+        String[] inputs = new String[11];
+        System.out.println("(Study Task Manager Week Set Up) Type the following info: " +
+                "planName, objectiveTitle, objectiveDescription, materialTopic, materialFormat, goal, reminderTitle, " +
+                "reminderDescription, mainTaskTitle, mainHabit, mainCardStudy");
+
+        // Collect all required inputs
+        for (int i = 0; i < inputs.length; i++) {
+            inputs[i] = getInput();
+        }
+        return inputs;
     }
+
+
+    private void getWeekInfo() {
+        // Collect inputs through the helper method
+        String[] inputs = collectWeekInputs();
+
+        // Create the WeekPlanDTO using the collected inputs
+        WeekPlanDTO weekPlanDTO = new WeekPlanDTO(
+                inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], inputs[5],
+                inputs[6], inputs[7], inputs[8], inputs[9], inputs[10]
+        );
+        studyTaskManager.setUpWeek(weekPlanDTO);
+    }
+
+
 
     private void handleSetUpWeek(){
         getWeekInfo();

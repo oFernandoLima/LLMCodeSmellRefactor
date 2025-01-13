@@ -76,46 +76,34 @@ public class KanbanView {
 
     public String kanbanView() throws Exception {
         try{
-
-            if(kanban.isEmpty()){
+            if (kanban.isEmpty()) {
                 throw new Exception("No material found");
             }
             StringBuilder sb = new StringBuilder();
-            sb.append("[ Material ToDo: ");
-            sb.append(System.lineSeparator());
-
-            if(kanban.get(State.TODO).isEmpty()){
-                sb.append("No material found");
-            } else {
-                for(PlannerMaterial material : kanban.get(State.TODO)){
-                    sb.append(", ").append(material.toString());
-                }
-            }
-            sb.append(System.lineSeparator());
-            sb.append("Material in progress:");
-            sb.append(System.lineSeparator());
-            if(kanban.get(State.DOING).isEmpty()){
-                sb.append("No material found");
-            } else {
-                for(PlannerMaterial material : kanban.get(State.DOING)){
-                    sb.append(", ").append(material.toString());
-                }
-            }
-            sb.append(System.lineSeparator());
-            sb.append("Material completed:");
-            sb.append(System.lineSeparator());
-            if(kanban.get(State.DONE).isEmpty()){
-                sb.append("No material found");
-            } else {
-                for(PlannerMaterial material : kanban.get(State.DONE)){
-                    sb.append(", ").append(material.toString());
-                }
-            }
+            appendSection(sb, "[ Material ToDo: ", State.TODO);
+            appendSection(sb, "Material in progress:", State.DOING);
+            appendSection(sb, "Material completed:", State.DONE);
             sb.append("]");
             return sb.toString();
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
     }
 
+    private void appendSection(StringBuilder sb, String header, State state) {
+        sb.append(header).append(System.lineSeparator());
+        appendMaterialsByState(sb, state);
+    }
+
+    private void appendMaterialsByState(StringBuilder sb, State state) {
+        List<PlannerMaterial> materials = kanban.get(state);
+        if (materials.isEmpty()) {
+            sb.append("No material found");
+        } else {
+            for (PlannerMaterial material : materials) {
+                sb.append(", ").append(material.toString());
+            }
+        }
+        sb.append(System.lineSeparator());
+    }
 }

@@ -27,26 +27,49 @@ public class StudyTaskManager {
         return weekResponsibilities;
     }
 
-    public void setUpWeek(String planName, String objectiveTitle, String objectiveDescription, String materialTopic,
-                          String materialFormat, String goal, String reminderTitle, String reminderDescription,
-                          String mainTaskTitle, String mainHabit, String mainCardStudy){
+    // Refactor to use WeekPlanDTO
+    public void setUpWeek(WeekPlanDTO weekPlanDTO){
         this.weekResponsibilities = new ArrayList<>();
-        this.weekResponsibilities.addAll(Arrays.asList(planName, objectiveTitle, objectiveDescription, materialTopic, materialFormat, goal, reminderTitle, reminderDescription, mainTaskTitle, mainHabit, mainCardStudy));
+        this.weekResponsibilities.addAll(Arrays.asList(
+                weekPlanDTO.getPlanName(),
+                weekPlanDTO.getObjectiveTitle(),
+                weekPlanDTO.getObjectiveDescription(),
+                weekPlanDTO.getMaterialTopic(),
+                weekPlanDTO.getMaterialFormat(),
+                weekPlanDTO.getGoal(),
+                weekPlanDTO.getReminderTitle(),
+                weekPlanDTO.getReminderDescription(),
+                weekPlanDTO.getMainTaskTitle(),
+                weekPlanDTO.getMainHabit(),
+                weekPlanDTO.getMainCardStudy()
+        ));
     }
 
     public void handleSetUpWeek(List<String> stringProperties){
-        setUpWeek(stringProperties.get(0), stringProperties.get(1), stringProperties.get(2), stringProperties.get(3),
-                stringProperties.get(4), stringProperties.get(5), stringProperties.get(6), stringProperties.get(7),
-                stringProperties.get(8), stringProperties.get(9), stringProperties.get(10));
+        WeekPlanDTO weekPlanDTO = new WeekPlanDTO(
+                stringProperties.get(0),
+                stringProperties.get(1),
+                stringProperties.get(2),
+                stringProperties.get(3),
+                stringProperties.get(4),
+                stringProperties.get(5),
+                stringProperties.get(6),
+                stringProperties.get(7),
+                stringProperties.get(8),
+                stringProperties.get(9),
+                stringProperties.get(10)
+        );
+        setUpWeek(weekPlanDTO);
     }
-
 
     public void addRegistry(Registry registry){
         registryList.add(registry);
     }
+
     public void removeRegistry(Registry registry){
         registryList.remove(registry);
     }
+
     public List<Registry> getRegistryList(){
         return registryList;
     }
@@ -61,5 +84,4 @@ public class StudyTaskManager {
         }
         return response;
     }
-
 }
